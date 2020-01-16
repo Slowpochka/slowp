@@ -1,0 +1,60 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec  4 22:13:27 2018
+
+@author: Rustam
+"""
+
+import matplotlib.pyplot as plt
+import numpy as np
+import math as m
+import scipy.stats as ss
+
+t_sec = list()
+l = list()
+v = list()
+n = list()
+N = 1000
+k = 0
+l_old = 100000000
+v_old = 100000000
+
+lyambda = 3
+K = 3
+l_new = 10**4
+v_new = 10**4
+
+
+def generate_erl_disrt():
+    xi = 0
+    for i in range(3):
+        x = np.random.uniform()
+        xi += ((-1*np.log(x))/lyambda)
+    return xi
+
+while abs((l_old - l_new)/l_old) >= 0.001 or abs((v_old - v_new)/v_old) >= 0.001:
+    k = N
+    t_sec = list()
+    l_old = l_new
+    v_old = v_new
+    for i in range(k):
+        uk = generate_erl_disrt()
+        t_sec.append(uk)
+    
+    m_u = sum(t_sec)/N
+    sigma_u = m.sqrt(sum(map(lambda x: (x - m_u)**2, t_sec)) / (N - 1))
+    l_new = 1/m_u
+    v_new = sigma_u / m_u
+    l.append(l_new)
+    v.append(v_new)
+    n.append(N)
+    N = 2*N
+
+fig1 = plt.figure()
+fig2 = plt.figure()
+axes1 = fig1.add_axes([0.1, 0.05, 0.8, 0.4])
+axes2 = fig2.add_axes([0.1, 0.05, 0.8, 0.4])
+axes1.semilogx(n, l, '--k')
+axes1.semilogx(n, [lyambda/K for _ in n], '-g')
+axes2.semilogx(n, v, '--k')
+axes2.semilogx(n, [1/m.sqrt(K) for _ in n], '-g')
